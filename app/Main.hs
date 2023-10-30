@@ -34,10 +34,10 @@ main :: IO ()
 main = do
   putStrLn "Enter the number of rows: "
   numRows <- readLn
-  putStrLn "Enter the number of columns: "
+  -- putStrLn "Enter the number of columns: "
 --  numCols <- readLn
   m <- creatMatrix numRows []
-  print m
+  mapM_ print m
 
 
 
