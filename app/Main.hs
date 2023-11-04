@@ -5,9 +5,16 @@ import GHC.Generics (prec)
 data XY = X | Y deriving (Eq, Show)
 data Coord = Coord Int Int deriving (Eq, Show)
 data V = V Int Int Int deriving (Eq, Show)
+data RespostaFinal = R Grid Int
 
 type Line = [Int]
 type Grid = [[Int]]
+
+getGrid :: RespostaFinal -> Grid
+getGrid (R m n) = m
+
+getN :: RespostaFinal -> Int
+getN (R m n) = n
 
 -- Adicionar linha na matrix
 addLine :: Grid -> Line -> IO Grid
@@ -52,10 +59,6 @@ vizinhos (Coord x y) =
   , Coord (x - 1) (y + 1)
   , Coord (x + 1) (y + 1)
   ]
-
-getCoodVizinho :: XY -> Coord -> Int
-getCoodVizinho X (Coord x y) = x
-getCoodVizinho Y (Coord x y) = y
 
 isAlive :: Int -> Bool
 isAlive x
@@ -136,24 +139,24 @@ verificaMatriz m mSaida (Coord x y) numRows numCols = do
       verificaMatriz m (mSaida ++ [l]) (Coord (x + 1) y) numRows numCols
     else return mSaida
 
-startGame :: Grid -> Grid -> Int -> Int -> Int -> IO Grid
+startGame :: Grid -> Grid -> Int -> Int -> Int -> IO RespostaFinal
 startGame m mResp n numRows numCols = do
   if (n > 0) && (m /= mResp)
     then do
       resp <- verificaMatriz m [] (Coord 0 0) numRows numCols
       startGame resp m (n-1) numRows numCols
     else do
-      return m
+      return (R m n)
 
 m :: Grid
 m =
   [
-  [1, 3, 2, 1, 3, 2],
-  [3, 1, 2, 3, 1, 1],
-  [1, 1, 1, 2, 1, 2],
-  [3, 1, 3, 2, 1, 1],
-  [1, 1, 1, 2, 1, 2],
-  [3, 2, 2, 1, 3, 3]
+  [1, 1, 2, 1, 3, 2],
+  [2, 1, 2, 1, 1, 1],
+  [1, 1, 1, 3, 1, 2],
+  [2, 1, 1, 2, 1, 1],
+  [1, 1, 1, 1, 1, 2],
+  [1, 2, 2, 1, 3, 1]
   ]
 
 main :: IO ()
@@ -187,7 +190,17 @@ main = do
 
   mResposta <- startGame m [] 1 6 6
 
-  putStrLn "Matriz de Saida:"
-  mapM_ print mResposta
+  putStrLn "Matriz de Saida - 1 Interacao:"
+  print "Interacaoes: " ++ show (1 - (getN mResposta))
+  mapM_ print (getGrid mResposta)
+
+  putStrLn " "
+
+  putStrLn " "
+
+  mResposta2 <- startGame m [] 20 6 6
+
+  putStrLn "Matriz de Saida -2 Interacao:"
+  mapM_ print (getGrid mResposta2)
 
   putStrLn " "
