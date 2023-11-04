@@ -79,27 +79,18 @@ neighbors (Coord x y) =
 
 -- Função para testar de a célula está viva
 isAlive :: Cell -> Bool
-isAlive x
-  | x == 1 = True
-  | x == 2 = False
-  | x == 3 = False
-  | otherwise = False
+isAlive 1 = True
+isAlive _ = False
 
 -- Função para verificar se a celula é um zumbi
 isZombie :: Cell -> Bool
-isZombie x
-  | x == 1 = False
-  | x == 2 = False
-  | x == 3 = True
-  | otherwise = False
+isZombie 3 = True
+isZombie _ = False
 
 -- Função para verificar se a célula está morta
 isDead :: Cell -> Bool
-isDead x
-  | x == 1 = False
-  | x == 2 = True
-  | x == 3 = False
-  | otherwise = False
+isDead 2 = True
+isDead _ = False
 
 -- Função para pegar o vizinho
 getNeighbor :: Grid -> Coord -> NumRows -> NumCols -> IO Int
@@ -200,7 +191,9 @@ main = do
   putStrLn "Start inserting the matrix: "
   grid <- createGrid numRows numCols []
 
-  putStrLn " "
+  putStrLn "\n"
+
+  putStrLn "Starting the Game of Life...\n"
 
   putStrLn (show numRows ++ "x" ++ show numCols ++" initial matrix:")
   mapM_ print grid
@@ -213,5 +206,7 @@ main = do
   mapM_ print (getGrid answerGrid)
 
   putStrLn " "
+
+  putStrLn "Game of Life Finished!"
 
   putStrLn " "
