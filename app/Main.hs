@@ -34,25 +34,35 @@ getCoordY (Coord x y) = y
 addRow :: Grid -> Row -> IO Grid
 addRow grid row = return (grid ++ [row])
 
+-- Verificar se existe algum erro no Input
+inputErro :: [String] -> NumCols -> Bool
+inputErro rowInput numCols = do
+  if (any (< "1") rowInput) || (any (>"3") rowInput) || (length rowInput < numCols)
+    then False
+    else True
+
+-- Transforma o input em uma lista de String
+inputToList :: String -> IO [String]
+inputToList input = return (words input)
+
 -- Ler uma linha de numeros do terminal
 getRow :: NumCols -> IO Row
 getRow numCols = do
-  rowInput <- getLine
-  let row = map read (words rowInput) :: Row
-  if length row == numCols
-    && all (< 4) row && all (> 0) row
-      then return row
-      else if length row > numCols &&
-        all (< 4) row && all (> 0) row
-      then do
-        let newRow = take numCols row :: Row
-        return newRow
-      else if length row < numCols ||
-        any (> 3) row || any (< 1) row
+  input <- getLine
+  rowInput <- inputToList input
+  if inputErro rowInput numCols
+    then do
+      let row = map read rowInput :: Row
+      if length row == numCols
+        then return row
+        else if length row > numCols 
           then do
-            putStrLn "Invalid Input. Try again."
-            getRow numCols
+            let newRow = take numCols row :: Row
+            return newRow
           else return row
+    else do
+      putStrLn "Invalid Input. Try again."
+      getRow numCols
 
 -- Função para construir a matriz
 createGrid :: NumRows -> NumCols -> Grid -> IO Grid
@@ -167,6 +177,8 @@ startGame grid numInteractions counter numRows numCols = do
         else startGame answerGrid numInteractions (counter + 1) numRows numCols
     else do
       return (Answer grid numInteractions)
+
+
 
 main :: IO ()
 main = do
