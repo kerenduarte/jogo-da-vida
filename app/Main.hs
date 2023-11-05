@@ -122,20 +122,35 @@ checkNeighbor grid (Coord x y) numRows numCols (Inspection alive dead zombie) = 
         then return (Inspection alive dead (zombie + 1))
         else return (Inspection alive dead zombie)
 
+-- Regra se a celula estiver viva
+ifAlive :: Inspection -> Row -> IO Row
+ifAlive (Inspection alive dead zombie) row = do
+  if zombie >= 1
+    then return (row ++ [3])
+    else if ((alive < 2) && (zombie <= 0)) || ((alive > 3) && (zombie <= 0))
+      then return (row ++ [2])
+      else return (row ++ [1])
+
+-- Regra se a celula estiver morta
+ifDead :: Inspection -> Row -> IO Row
+ifDead (Inspection alive dead zombie) row = do
+  if alive == 3
+    then return (row ++ [1])
+    else return (row ++ [2])
+
+-- Regra se a celula for zombi
+ifZombie :: Inspection -> Row -> IO Row
+ifZombie (Inspection alive dead zombie) row = do
+  if alive <= 0
+    then return (row ++ [2])
+    else return (row ++ [3])
+
 -- Função para verificar a regra e descobrir qual será o estado da celula na resposta
 checkInspection :: Cell -> Row -> Inspection -> IO Row
 checkInspection cell row (Inspection alive dead zombie)
-  | isAlive cell = if zombie >= 1
-      then return (row ++ [3])
-      else (if ((alive < 2) && (zombie <= 0)) || ((alive > 3) && (zombie <= 0))
-        then return (row ++ [2])
-        else return (row ++ [1]))
-  | isDead cell = if alive == 3
-        then return (row ++ [1])
-        else return (row ++ [2])
-  | isZombie cell = if alive <= 0
-          then return (row ++ [2])
-          else return (row ++ [3])
+  | isAlive cell = ifAlive (Inspection alive dead zombie) row
+  | isDead cell = ifDead (Inspection alive dead zombie) row
+  | isZombie cell = ifZombie (Inspection alive dead zombie) row
   | otherwise = return row
 
 -- Função para dar inicio a verificações dos vizinhos
@@ -177,8 +192,6 @@ startGame grid numInteractions counter numRows numCols = do
         else startGame answerGrid numInteractions (counter + 1) numRows numCols
     else do
       return (Answer grid numInteractions)
-
-
 
 main :: IO ()
 main = do
