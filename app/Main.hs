@@ -37,9 +37,7 @@ addRow grid row = return (grid ++ [row])
 -- Verificar se existe algum erro no Input
 inputErro :: [String] -> NumCols -> Bool
 inputErro rowInput numCols = do
-  if (any (< "1") rowInput) || (any (>"3") rowInput) || (length rowInput < numCols)
-    then False
-    else True
+  not (any (< "1") rowInput || any (>"3") rowInput || (length rowInput < numCols))
 
 -- Transforma o input em uma lista de String
 inputToList :: String -> IO [String]
@@ -55,7 +53,7 @@ getRow numCols = do
       let row = map read rowInput :: Row
       if length row == numCols
         then return row
-        else if length row > numCols 
+        else if length row > numCols
           then do
             let newRow = take numCols row :: Row
             return newRow
@@ -181,23 +179,34 @@ checkGrid grid newGrid (Coord x y) numRows numCols = do
       checkGrid grid (newGrid ++ [row]) (Coord (x + 1) y) numRows numCols
     else return newGrid
 
+-- Função para verificar se todos os elementos de uma lista são iguais
+allEqual :: Eq a => [a] -> Maybe a -> Bool
+allEqual [] _ = True
+allEqual (h:t) Nothing = allEqual t (Just h)
+allEqual (h:t) (Just e)
+    | h == e = allEqual t (Just e)
+    | otherwise = False
+
 -- Função que inicia o jogo
 startGame :: Grid -> Int -> Int -> NumRows -> NumCols -> IO Answer
 startGame grid numInteractions counter numRows numCols = do
   if counter <= numInteractions
     then do
       answerGrid <- checkGrid grid [] (Coord 0 0) numRows numCols
-      if answerGrid == grid
-        then return (Answer grid counter)
-        else startGame answerGrid numInteractions (counter + 1) numRows numCols
+      putStrLn $ "Interaction " ++ show counter ++ "."
+      mapM_ print answerGrid
+      putStrLn " "
+      if allEqual (concat answerGrid) (Just 2)
+        then return (Answer answerGrid counter)
+        else do
+          startGame answerGrid numInteractions (counter + 1) numRows numCols
     else do
       return (Answer grid numInteractions)
 
 main :: IO ()
 main = do
 
-  putStrLn " "
-  putStrLn " "
+  putStrLn "\n"
 
   putStrLn "Number of interactions: "
   numInteractions <- readLn
@@ -225,7 +234,7 @@ main = do
 
   putStrLn " "
 
-  answerGrid <- startGame grid numInteractions 0 numRows numCols
+  answerGrid <- startGame grid numInteractions 1 numRows numCols
 
   putStrLn ("Response Matrix after " ++ show (getN answerGrid) ++ " interactions:")
   mapM_ print (getGrid answerGrid)
