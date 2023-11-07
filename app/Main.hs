@@ -1,4 +1,6 @@
+{-# OPTIONS_GHC -Wno-missing-export-lists #-}
 module Main where
+import Text.Read (readMaybe)
 
 -- 1 is Alive
 -- 2 is Dead
@@ -16,19 +18,19 @@ type NumRows = Int
 
 -- Função para pegar a matriz final do dado Answer
 getGrid :: Answer -> Grid
-getGrid (Answer grid num) = grid
+getGrid (Answer grid _) = grid
 
 -- Função para pergar o número de interações do dado Answer
 getN :: Answer -> Int
-getN (Answer grid num) = num
+getN (Answer _ num) = num
 
 -- Função para pergar a coordernado x do dado Coord
 getCoordX :: Coord -> Int
-getCoordX (Coord x y) = x
+getCoordX (Coord x _) = x
 
 -- Função para pegar a coordernada y do dado Coord
 getCoordY :: Coord -> Int
-getCoordY (Coord x y) = y
+getCoordY (Coord _ y) = y
 
 -- Adiciona linha na matrix
 addRow :: Grid -> Row -> IO Grid
@@ -122,7 +124,7 @@ checkNeighbor grid (Coord x y) numRows numCols (Inspection alive dead zombie) = 
 
 -- Regra se a celula estiver viva
 ifAlive :: Inspection -> Row -> IO Row
-ifAlive (Inspection alive dead zombie) row = do
+ifAlive (Inspection alive _ zombie) row = do
   if zombie >= 1
     then return (row ++ [3])
     else if ((alive < 2) && (zombie <= 0)) || ((alive > 3) && (zombie <= 0))
@@ -131,14 +133,14 @@ ifAlive (Inspection alive dead zombie) row = do
 
 -- Regra se a celula estiver morta
 ifDead :: Inspection -> Row -> IO Row
-ifDead (Inspection alive dead zombie) row = do
+ifDead (Inspection alive _ _) row = do
   if alive == 3
     then return (row ++ [1])
     else return (row ++ [2])
 
 -- Regra se a celula for zombi
 ifZombie :: Inspection -> Row -> IO Row
-ifZombie (Inspection alive dead zombie) row = do
+ifZombie (Inspection alive _ _) row = do
   if alive <= 0
     then return (row ++ [2])
     else return (row ++ [3])
@@ -187,6 +189,17 @@ allEqual (h:t) (Just e)
     | h == e = allEqual t (Just e)
     | otherwise = False
 
+-- Função para ler somente números
+readNumber :: String -> IO Int
+readNumber prompt = do
+    putStr prompt
+    input <- getLine
+    case readMaybe input of
+        Just num -> return num
+        Nothing -> do
+            putStrLn "Invalid input. Please enter a valid number."
+            readNumber prompt
+
 -- Função que inicia o jogo
 startGame :: Grid -> Int -> Int -> NumRows -> NumCols -> IO Answer
 startGame grid numInteractions counter numRows numCols = do
@@ -209,13 +222,13 @@ main = do
   putStrLn "\n"
 
   putStrLn "Number of interactions: "
-  numInteractions <- readLn
+  numInteractions <- readNumber ""
 
   putStrLn "\nNumber of rows in the matrix: "
-  numRows <- readLn
+  numRows <- readNumber ""
 
   putStrLn "Number of columns in the matrix: "
-  numCols <- readLn
+  numCols <- readNumber ""
 
   putStrLn " "
 
